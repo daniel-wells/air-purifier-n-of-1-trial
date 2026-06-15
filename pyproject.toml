@@ -1,0 +1,17 @@
+[project]
+name = "sced"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "bambi>=0.13.0",
+    "llvmlite",
+    "numba",
+    "plotnine>=0.12.4",
+    "jupyter",
+    "pyyaml",
+    "ipykernel",
+    "numpyro>=0.15",
+    "jax>=0.4",
+]
