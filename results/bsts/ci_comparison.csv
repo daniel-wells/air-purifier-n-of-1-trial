@@ -1,0 +1,7 @@
+Method,Mean (%),Lower CI (%),Upper CI (%),Width (%)
+Point-wise Bootstrap,90.11,88.56,91.56,3.0
+Cluster-based Bootstrap,90.05,85.42,94.02,8.6
+Paired Ratio Bootstrap,84.73,78.32,90.94,12.62
+Efron-Morris EB,90.26,87.22,93.22,6.0
+BSTS Conditional HDI,96.32,92.8,99.17,6.37
+BSTS Marginal HDI,91.86,88.09,95.63,7.54
