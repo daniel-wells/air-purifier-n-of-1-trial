@@ -298,7 +298,7 @@ Across many simulations, the rank of the posterior parameter values should be un
 
 The observed difference between the ECDF and the expected uniform distribution is within the range of expected differences (light blue band), suggesting the model is well calibrated.
 
-![Difference between empirical cumulative distributions for the treatment effect and the uniform distribution](results/bsts/sbc/sbc_ecdf_diff_phase_numeric_matched.png)
+![Difference between empirical cumulative distributions for the treatment effect and the uniform distribution](results/bsts/sbc/sbc_ecdf_diff_mean_phase_effect_matched.png)
 
 
 
