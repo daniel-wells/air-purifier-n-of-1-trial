@@ -14,104 +14,94 @@ nix develop
 ### 0. Rule-of-thumb power plot (R)
 Generates the paired vs two-sample power comparison plot.
 ```bash
-Rscript paired_power.r
+Rscript src/paired_power.r
 ```
 
 ### 1. Exploratory Data Analysis & Base Plots
 Generate the initial data visualizations (timelines, density plots, ECDFs, etc.) and standard baseline statistics.
 ```bash
-uv run python air_purification.py
+uv run python src/air_purification.py
 ```
 
 ### 2. Fit the Bayesian Hierarchical Model
 Fit the BSTS NegBinomial model using PyMC + NumPyro. Saves the posterior trace and summary.
 *(Note: This step takes ~20 minutes as it relies on MCMC).*
 ```bash
-uv run python bambi_fit.py --mode bsts_daily_gp
-uv run python bambi_fit.py --mode bsts
+uv run python src/fit.py --mode bsts
+uv run python src/fit.py --mode bsts_daily_gp
 
 ```
 
 ### 3. Generate Posterior Plots & Key Metrics
 Use the trace to create posterior distributions, retrodictive checks, reduction posteriors, and
-`plots/bsts/key_metrics.csv` (loaded by `index.qmd` for inline numbers).
+`results/bsts/key_metrics.csv` (loaded by `index.qmd` for inline numbers).
 ```bash
-uv run python bambi_fit_plots.py bsts
-uv run python bambi_fit_plots.py bsts_daily_gp
+uv run python src/fit_plots.py bsts
+uv run python src/fit_plots.py bsts_daily_gp
 
 ```
 
 ### 4. Generate Timeline Overlay
 Overlays raw PM2.5 levels with the model's continuous latent mean estimate.
 ```bash
-uv run python bambi_timeline_plot.py bsts
+uv run python src/timeline_plot.py bsts
 ```
 
 ### 5. Prior Predictive Simulation Plots
 Generates `sim_prior_*_hist.png`, `sim_pm2p5_*.png` — prior predictive checks comparing
 simulated data summaries to observed data.
 ```bash
-uv run python bambi_simulation.py bsts
+uv run python src/simulation.py bsts
 ```
 
 ### 6. Prior Pushforward Components
 Generates `sim_prior_pushforward_components.png` — evolving pushforward of the BSTS components.
 ```bash
-uv run python bsts_prior_pushforward.py
+uv run python src/bsts_prior_pushforward.py
 ```
 
 ### 7. Plate Diagram
-Generates `plots/bsts/plate_diagram.png` (used in blog) and the PyMC auto-generated reference.
+Generates `results/bsts/plate_diagram.png` (used in blog) and the PyMC auto-generated reference.
 ```bash
-uv run python bsts_plate_diagram.py
+uv run python src/bsts_plate_diagram.py
 ```
 
 
 uv run python gp_trajectory_plot.py
 
 
-### 8. PSIS-LOO Diagnostic (k-hat)
-Generates `plots/bsts/fit_khat_diagnostic.png`.
-```bash
-uv run python bsts_khat_plot.py
-```
 
 ### 9. Individual Treatment Effect (ITE) Counterfactual Plot
 For a chosen period, compares the observed Phase B latent mean (purifier ON) against
 a synthetic counterfactual trajectory (purifier stayed OFF) computed from the posterior.
-Outputs `plots/bsts/ite_counterfactual_period{N}.png`.
+Outputs `results/bsts/ite_counterfactual_period{N}.png`.
 ```bash
-uv run python bsts_ite_plot.py --period 21   # Feb 26-27 (default)
-uv run python bsts_ite_plot.py --period 34   # Mar 24-25 (highest contrast)
+uv run python src/bsts_ite_plot.py --period 21   # Feb 26-27 (default)
+uv run python src/bsts_ite_plot.py --period 34   # Mar 24-25 (highest contrast)
 ```
 
 ### 10. CI Comparison Table
-Computes the bootstrap vs model CI comparison and saves `plots/bsts/ci_comparison.csv`
+Computes the bootstrap vs model CI comparison and saves `results/bsts/ci_comparison.csv`
 (loaded by the Quarto data table chunk).
 ```bash
-uv run python ci_comparison_reduction.py bsts
-uv run python ci_comparison_plot.py
+uv run python src/ci_comparison_reduction.py bsts
+uv run python src/ci_comparison_plot.py
 ```
 
-### 10. Bootstrap Coverage Plots
-Runs 100 simulated datasets to evaluate bootstrap interval coverage; saves `plots/bootstrap_coverage*.png`.
-```bash
-uv run python coverage_plot.py bsts
-```
 
 ### 11. SBC Calibration (optional — slow, run on server)
 Simulation-based calibration for the BSTS model. Requires `bsts_sbc.py` to have been run first
 (typically on the remote server). Then replot from saved ranks:
 ```bash
 # Run on server (takes hours):
-uv run python bsts_sbc.py
-# Replot locally once plots/bsts/sbc/sbc_ranks.csv exists:
-uv run python bsts_sbc_ecdf.py
+uv run python src/bsts_sbc.py bsts
+# Replot locally once results/bsts/sbc/sbc_ranks.csv exists:
+uv run python src/bsts_sbc_ecdf.py bsts
 ```
 
 ### 12. Render the Quarto Report
 Compiles `index.qmd` into `index.html`. Inline Python numbers are pulled automatically
-from `plots/bsts/key_metrics.csv` and `plots/bsts/fit_summary_clean.csv`.
+from `results/bsts/key_metrics.csv` and `results/bsts/fit_summary_clean.csv`.
 ```bash
 uv run quarto render index.qmd
 ```
@@ -145,7 +135,7 @@ ssh -i ~/.ssh/hertz1 root@2a01:4f9:c013:9cf9::1 "apt-get update -qq && apt-get i
 rsync -avz \
   -e "ssh -i ~/.ssh/hertz1" \
   --exclude='.venv' --exclude='__pycache__' --exclude='*.nc' \
-  --exclude='plots/bsts/sbc/*.png' --exclude='plots/bsts/sbc/*.csv' \
+  --exclude='results/bsts/sbc/*.png' --exclude='results/bsts/sbc/*.csv' \
   --exclude='.git' --exclude='.gemini' \
   /Users/d.wells/Dropbox/Github/sced/ \
   "root@[2a01:4f9:c013:9cf9::1]:/root/sced/"
@@ -171,7 +161,7 @@ ssh -i ~/.ssh/hertz1 root@2a01:4f9:c013:9cf9::1 \
 
 # Run the model fit in the background
 ssh -i ~/.ssh/hertz1 root@2a01:4f9:c013:9cf9::1 \
-  "cd /root/sced && nohup uv run python bambi_fit.py > logs/fit.log 2>&1 &"
+  "cd /root/sced && nohup uv run python fit.py > logs/fit.log 2>&1 &"
 
 # Tail logs remotely
 ssh -i ~/.ssh/hertz1 root@2a01:4f9:c013:9cf9::1 "tail -f /root/sced/logs/sbc.log"
@@ -179,8 +169,8 @@ ssh -i ~/.ssh/hertz1 root@2a01:4f9:c013:9cf9::1 "tail -f /root/sced/logs/sbc.log
 # Sync results back to local machine
 rsync -avz \
   -e "ssh -i ~/.ssh/hertz1" \
-  "root@[2a01:4f9:c013:9cf9::1]:/root/sced/plots/" \
-  /Users/d.wells/Dropbox/Github/sced/plots/
+  "root@[2a01:4f9:c013:9cf9::1]:/root/sced/results/" \
+  /Users/d.wells/Dropbox/Github/sced/results/
 ```
 
 ---
@@ -215,8 +205,8 @@ uv sync
 
 ```bash
 uv run python air_purification.py
-uv run python bambi_fit.py
-uv run python bambi_fit_plots.py
+uv run python fit.py
+uv run python fit_plots.py
 uv run quarto render index.qmd
 ```
 
