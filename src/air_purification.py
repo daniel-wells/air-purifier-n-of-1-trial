@@ -110,26 +110,12 @@ if __name__ == "__main__":
     p.save("results/pm2p5_dist.png", width=7, height=5, units='in', dpi=300)
 
     p = plot_ecdf_comparison(dt, 'PM2p5_censored', 'purifier_on', limit=5, x_lim=(0, 20)) +\
+        pn.labs(x="PM2.5 (ug/m^3)") +\
         pn.annotate("text", x=5.5, y=0.2, label="WHO limit (5 ug/m^3)", color="blue", ha="left") +\
         pn.annotate("text", x=15, y=0.77, label="75% of 'Off' data is below here", size=8, alpha=0.6) +\
         pn.geom_hline(yintercept=0.75, linetype='dotted', alpha=0.5) +\
         pn.theme(legend_position=(0.65, 0.25))
     p.save("results/pm2p5_ecdf.png", width=7, height=5, units='in', dpi=300)
-
-    # ecdf but only Feburary
-    dt_feb = dt[dt.datetime.dt.month == 2]
-    p = pn.ggplot(dt_feb, pn.aes('PM2p5_censored', colour='purifier_on')) +\
-        pn.stat_ecdf() +\
-        pn.geom_vline(xintercept=5, linetype='dashed', colour='blue') +\
-        pn.geom_hline(yintercept=0.75, linetype='dotted', alpha=0.5) +\
-        pn.scale_colour_brewer(type="qual", palette = "Set1") +\
-        pn.labs(x="PM2.5 (ug/m^3)", y="Cumulative Proportion", colour='Purifier on?') +\
-        pn.annotate("text", x=5.5, y=0.2, label="WHO limit (5 ug/m^3)", color="blue", ha="left") +\
-        pn.annotate("text", x=15, y=0.77, label="75% of 'Off' data is below here", size=8, alpha=0.6) +\
-        pn.theme(legend_position=(0.65,0.25)) +\
-        pn.coord_cartesian(xlim=(0,20))
-    p.save("results/pm2p5_ecdf_feb.png", width=7, height=5, units='in', dpi=300)
-
 
 
     p = pn.ggplot(dt, pn.aes('datetime','PM2p5', colour='purifier_on', group=1)) +\
